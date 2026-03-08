@@ -332,9 +332,13 @@ function onRoll() {
   state.phase = 'moving';
   setStatus('Select a checker to move');
   render();
+
+  optimalMoveData = computeOptimalWhiteMoves([...state.dice]);
+  playerMoves = [];
 }
 
 function endPlayerTurn() {
+  showMoveFeedback();
   state.dice = [];
   state.selectedPoint = null;
   state.legalMoves = [];
@@ -390,6 +394,7 @@ function executeMoveAndContinue(move) {
   if (di !== -1) state.dice.splice(di, 1);
   else state.dice.shift();
 
+  playerMoves.push({ from: move.from, to: move.to });
   applyMove(move);
 
   const winner = checkWinner();
@@ -670,6 +675,147 @@ function setStatus(msg) {
 
 function enableRoll(_on) {
   // Roll Dice button removed — dice auto-roll
+}
+
+// ─────────────────────────────────────────────
+// Move evaluation
+// ─────────────────────────────────────────────
+
+let optimalMoveData = null;
+let playerMoves     = [];
+
+function copyBoard(board) {
+  return board.map(p => ({ color: p.color, count: p.count }));
+}
+function copyBarOff(obj) { return { white: obj.white, black: obj.black }; }
+
+// Score a single move for WHITE (mirrors scoreMove which is for BLACK)
+function scoreMoveWhite(move, boardSnapshot) {
+  let score = 0;
+  const { from, to } = move;
+  if (from === BAR) score += 50;
+  if (to !== 0 && to !== 25 && boardSnapshot[to]?.color === BLACK && boardSnapshot[to].count === 1) score += 25;
+  if (to !== 0 && to !== 25 && boardSnapshot[to]?.color === WHITE && boardSnapshot[to].count >= 1) score += 15;
+  if (from !== BAR && to !== 0 && to !== 25) score += (12 - to) * 0.5;
+  if (from !== BAR && boardSnapshot[from]?.count === 1) score += 3;
+  if (to === 0) score += 30;
+  return score;
+}
+
+// Overall positional score for WHITE — higher is better
+function evalPositionWhite(board, bar, off) {
+  let whitePip = 0, blackPip = 0;
+  for (let p = 1; p <= 24; p++) {
+    if (board[p].color === WHITE) whitePip += p * board[p].count;
+    if (board[p].color === BLACK) blackPip += (25 - p) * board[p].count;
+  }
+  whitePip += bar.white * 25;
+  blackPip += bar.black * 25;
+  let score = blackPip - whitePip;
+  for (let p = 1; p <= 24; p++) {
+    if (board[p].color === WHITE && board[p].count === 1) score -= 8;
+    if (board[p].color === WHITE && board[p].count >= 2) score += 4;
+  }
+  score += off.white * 10 - off.black * 5;
+  score -= bar.white * 15 - bar.black * 8;
+  return score;
+}
+
+// Greedy-optimal simulation for WHITE — temporarily swaps state
+function computeOptimalWhiteMoves(dice) {
+  const savedBoard  = state.board;
+  const savedBar    = state.bar;
+  const savedOff    = state.off;
+  const savedPlayer = state.currentPlayer;
+
+  state.board = copyBoard(savedBoard);
+  state.bar   = copyBarOff(savedBar);
+  state.off   = copyBarOff(savedOff);
+  state.currentPlayer = WHITE;
+
+  let availDice = [...dice];
+  const moves = [];
+  let iterations = 0;
+
+  while (availDice.length > 0 && iterations < 8) {
+    iterations++;
+    const lm = getLegalMoves(WHITE, availDice);
+    if (lm.length === 0) break;
+
+    let best = null, bestScore = -Infinity;
+    for (const m of lm) {
+      const s = scoreMoveWhite(m, state.board);
+      if (s > bestScore) { bestScore = s; best = m; }
+    }
+
+    moves.push({ from: best.from, to: best.to });
+
+    const dv = best.from === BAR ? (25 - best.to) : Math.abs(best.to - best.from);
+    const di = availDice.indexOf(dv);
+    if (di !== -1) availDice.splice(di, 1); else availDice.shift();
+    applyMove(best);
+  }
+
+  const resultBoard = copyBoard(state.board);
+  const resultBar   = copyBarOff(state.bar);
+  const resultOff   = copyBarOff(state.off);
+
+  state.board = savedBoard;
+  state.bar   = savedBar;
+  state.off   = savedOff;
+  state.currentPlayer = savedPlayer;
+
+  return { moves, resultBoard, resultBar, resultOff };
+}
+
+function formatPt(pt) {
+  if (pt === BAR) return 'bar';
+  if (pt === 0)   return 'off';
+  return String(pt);
+}
+
+function showMoveFeedback() {
+  if (!optimalMoveData || playerMoves.length === 0) return;
+
+  const playerScore  = evalPositionWhite(state.board, state.bar, state.off);
+  const optimalScore = evalPositionWhite(
+    optimalMoveData.resultBoard, optimalMoveData.resultBar, optimalMoveData.resultOff
+  );
+
+  let rating;
+  if (playerScore >= optimalScore) {
+    rating = 10;
+  } else {
+    const diff = optimalScore - playerScore;
+    rating = Math.max(1, Math.round(10 - diff / 5));
+  }
+
+  // Check if player destinations match optimal
+  const pDests = playerMoves.map(m => m.to).sort((a,b)=>a-b).join(',');
+  const oDests = optimalMoveData.moves.map(m => m.to).sort((a,b)=>a-b).join(',');
+  const isOptimal = pDests === oDests;
+
+  const ratingClass = rating >= 8 ? 'fb-great' : rating >= 5 ? 'fb-ok' : 'fb-poor';
+  const optimalDesc = optimalMoveData.moves
+    .map(m => `${formatPt(m.from)}→${formatPt(m.to)}`).join(' · ');
+
+  let label;
+  if (isOptimal || rating === 10) {
+    label = 'Perfect play!';
+  } else {
+    label = `Best: <em>${optimalDesc}</em>`;
+  }
+
+  const el = document.getElementById('move-feedback');
+  el.innerHTML = `<span class="fb-rating ${ratingClass}">${rating}/10</span><span class="fb-label">${label}</span>`;
+  el.classList.remove('hidden');
+  el.classList.add('visible');
+
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => {
+    el.classList.remove('visible');
+    setTimeout(() => el.classList.add('hidden'), 400);
+  }, 4500);
 }
 
 // ─────────────────────────────────────────────

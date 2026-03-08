@@ -271,8 +271,11 @@ button:disabled { opacity: 0.4; cursor: default; }
   border-radius: 10px;
   padding: 20px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 14px;
+  min-height: 130px;
 }
 
 #dice-display {
@@ -368,6 +371,38 @@ button:disabled { opacity: 0.4; cursor: default; }
 }
 .score-label { color: #55555e; }
 .score-value { color: #d8d8de; font-weight: 600; }
+
+/* Move feedback */
+#move-feedback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.35s;
+  pointer-events: none;
+}
+#move-feedback.hidden { display: none; }
+#move-feedback.visible { opacity: 1; }
+
+.fb-rating {
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-width: 48px;
+  text-align: center;
+  line-height: 1;
+}
+.fb-great { color: #44dd88; }
+.fb-ok    { color: #ffcc44; }
+.fb-poor  { color: #ff6655; }
+
+.fb-label {
+  font-size: 0.82rem;
+  color: #666672;
+}
+.fb-label em {
+  color: #a8a8b8;
+  font-style: normal;
+}
 
 /* Overlay */
 #overlay {
