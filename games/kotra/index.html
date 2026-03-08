@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kotra</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <a href="../../index.html" class="back-link">← All Games</a>
+      <h1>Kotra</h1>
+      <div id="status">Press "Roll Dice" to start</div>
+      <button id="btn-roll">Roll Dice</button>
+      <button id="btn-new">New Game</button>
+    </header>
+
+    <div id="board-container">
+      <!-- Top label row (points 13-24) -->
+      <div id="top-labels" class="labels"></div>
+
+      <div id="board">
+        <!-- Top half: points 13-24 (left to right) -->
+        <div id="top-half">
+          <div id="top-left" class="half-board"></div>
+          <div id="bar-top" class="bar-section"></div>
+          <div id="top-right" class="half-board"></div>
+        </div>
+
+        <!-- Bottom half: points 12-1 (left to right) -->
+        <div id="bottom-half">
+          <div id="bottom-left" class="half-board"></div>
+          <div id="bar-bottom" class="bar-section"></div>
+          <div id="bottom-right" class="half-board"></div>
+        </div>
+      </div>
+
+      <!-- Bottom label row (points 1-12) -->
+      <div id="bottom-labels" class="labels"></div>
+
+    </div>
+
+    <div id="sidebar">
+      <div id="score-area">
+        <div class="score-row">
+          <span class="score-label">You (white)</span>
+          <span id="white-off" class="score-value">0 / 15</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">AI (black)</span>
+          <span id="black-off" class="score-value">0 / 15</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">White bar</span>
+          <span id="white-bar" class="score-value">0</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">Black bar</span>
+          <span id="black-bar" class="score-value">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dice spanning full width below board+sidebar -->
+    <div id="dice-area">
+      <div id="dice-display">
+        <div class="die" id="die1"></div>
+        <div class="die" id="die2"></div>
+      </div>
+    </div>
+
+    <div id="overlay" class="hidden">
+      <div id="overlay-content">
+        <h2 id="overlay-title"></h2>
+        <button id="overlay-new">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

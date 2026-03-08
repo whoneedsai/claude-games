@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Granny's Coffee Break</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <a href="../../index.html" class="back-link">← All Games</a>
+      <h1>Granny's Coffee Break</h1>
+    </header>
+
+    <div id="main">
+      <div id="click-side">
+        <div id="score-display">
+          <div id="contentment-count">0</div>
+          <div id="contentment-label">contentment</div>
+          <div id="happiness-level">Settling in…</div>
+        </div>
+        <canvas id="granny-canvas" width="280" height="340"></canvas>
+        <div id="stats">
+          <span id="cpc-display">1 per click</span>
+          <span class="stats-sep">·</span>
+          <span id="cps-display">0 per sec</span>
+        </div>
+      </div>
+
+      <div id="upgrades-side">
+        <div class="upgrades-header">Upgrades</div>
+        <div id="upgrades-list"></div>
+      </div>
+    </div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
