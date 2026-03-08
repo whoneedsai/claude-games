@@ -668,8 +668,8 @@ function setStatus(msg) {
   document.getElementById('status').textContent = msg;
 }
 
-function enableRoll(on) {
-  document.getElementById('btn-roll').disabled = !on;
+function enableRoll(_on) {
+  // Roll Dice button removed — dice auto-roll
 }
 
 // ─────────────────────────────────────────────
@@ -681,10 +681,8 @@ document.addEventListener('DOMContentLoaded', () => {
   state.phase = 'rolling';
   render();
   setStatus('Rolling…');
-  enableRoll(false);
   setTimeout(onRoll, 600);
 
-  document.getElementById('btn-roll').addEventListener('click', onRoll);
   document.getElementById('btn-new').addEventListener('click', newGame);
   document.getElementById('overlay-new').addEventListener('click', newGame);
 });
