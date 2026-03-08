@@ -60,9 +60,10 @@ function newGame() {
   state.legalMoves = [];
 
   document.getElementById('overlay').classList.add('hidden');
-  setStatus('Your turn — roll the dice!');
-  enableRoll(true);
+  setStatus('Rolling…');
+  enableRoll(false);
   render();
+  setTimeout(onRoll, 600);
 }
 
 // ─────────────────────────────────────────────
@@ -300,9 +301,10 @@ function runAI() {
   state.allDice = [];
   state.phase = 'rolling';
   state.currentPlayer = WHITE;
-  setStatus('Your turn — roll the dice!');
-  enableRoll(true);
+  setStatus('Rolling…');
+  enableRoll(false);
   render();
+  setTimeout(onRoll, 600);
 }
 
 // ─────────────────────────────────────────────
@@ -678,7 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initBoard();
   state.phase = 'rolling';
   render();
-  setStatus('Your turn — roll the dice!');
+  setStatus('Rolling…');
+  enableRoll(false);
+  setTimeout(onRoll, 600);
 
   document.getElementById('btn-roll').addEventListener('click', onRoll);
   document.getElementById('btn-new').addEventListener('click', newGame);
